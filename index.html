@@ -15,12 +15,17 @@
             overflow: hidden;
         }
         #sidebar {
+            position: sticky !important;
+            top: 0 !important;
             width: 200px;
             height: 100%;
             overflow-y: auto;
             padding: 10px;
             border-left: 1px solid #ccc;
             direction: rtl;
+            z-index: 1000 !important;
+            border-bottom: 1px solid #ccc !important;
+            padding: 8px !important;
         }
         #sidebar h3 {
             margin: 0 0 10px 0;
@@ -45,18 +50,42 @@
             height: 100%;
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+        .ql-toolbar.ql-snow {
+            position: sticky !important;
+            top: 0 !important;
+            background: white !important;
+            z-index: 1000 !important;
+            border-bottom: 1px solid #ccc !important;
+            padding: 8px !important;
         }
         #editor {
             flex-grow: 1;
             overflow-y: auto;
+            padding-top: 10px;
         }
         .ql-editor {
             direction: rtl !important;
             text-align: right !important;
+            min-height: calc(100vh - 80px) !important;
+            padding-bottom: 50px !important;
         }
-        .ql-undo {
-            direction: ltr !important;
-            text-align: left !important;
+        .ql-container.ql-snow {
+            border: none !important;
+        }
+        .custom-button {
+            background: none;
+            width: fit-content;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 3px;
+            margin: 0 5px;
+        }
+        .custom-button:hover {
+            background-color: #f0f0f0;
         }
     </style>
 </head>
@@ -73,9 +102,9 @@
                 <option value="large"></option>
                 <option value="huge"></option>
             </select>
-            <button class="ql-header" value="1"> </button>
-            <button class="ql-header" value="2"> </button>
-            <button class="ql-header" value="3"> </button>
+            <button class="ql-header" value="1"></button>
+            <button class="ql-header" value="2"></button>
+            <button class="ql-header" value="3"></button>
             <select class="ql-header">
                 <option value="4"></option>
                 <option value="5"></option>
@@ -85,10 +114,10 @@
             <button class="ql-bold"></button>
             <button class="ql-script" value="sub"></button>
             <button class="ql-script" value="super"></button>
-            <button class="ql-redo" style="width: fit-content; padding: 5px" onclick="myRedo()"></button>
-            <button class="ql-undo" style="width: fit-content; padding: 5px" onclick="myUndo()"></button>
-            <button class="ql-downloadBtn" style="width: fit-content; padding: 5px" onclick="download()"></button>
-            <button class="ql-upload-text-btn" style="width: fit-content; padding: 5px" onclick="upload()"></button>
+            <button class="custom-button" style="width: fit-content;" onclick="myUndo()">בטל</button>
+            <button class="custom-button" style="width: fit-content;" onclick="myRedo()">בצע שוב</button>
+            <button class="custom-button" style="width: fit-content;" onclick="download()">ייצוא טקסט</button>
+            <button class="custom-button" style="width: fit-content;" onclick="upload()">העלאת קובץ טקסט</button>
         </div>
         <div id="editor" dir="rtl">
             <p>הדבק כאן את הטקסט ותתחיל לערוך</p>
@@ -101,12 +130,6 @@
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 
     <script>
-        var icons = Quill.import("ui/icons");
-        icons["undo"] = 'בטל';
-        icons["redo"] = 'בצע שוב';
-        icons["downloadBtn"] = 'ייצוא טקסט';
-        icons["upload-text-btn"] = 'העלאת קובץ טקסט';
-
         const quill = new Quill('#editor', {
             theme: 'snow',
             modules: {
@@ -178,13 +201,11 @@
         }
 
         function myUndo() {
-            let myEditor = this.reactQuillRef.getEditor();
-            return myEditor.history.undo();
+            quill.history.undo();
         }
 
         function myRedo() {
-            let myEditor = this.reactQuillRef.getEditor();
-            return myEditor.history.redo();
+            quill.history.redo();
         }
     </script>
 </body>
