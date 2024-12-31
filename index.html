@@ -1,131 +1,191 @@
-<!-- Include stylesheet -->
-<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
-
-<!-- Create the editor container -->
-<div id="toolbar">
-  <!-- Add font size dropdown -->
-  <select class="ql-size">
-    <option value="small"></option>
-    <!-- Note a missing, thus falsy value, is used to reset to default -->
-    <option selected></option>
-    <option value="large"></option>
-    <option value="huge"></option>
-  </select>
-  <button class="ql-header" value="1"> </button>
-  <button class="ql-header" value="2"> </button>
-  <button class="ql-header" value="3"> </button>
-  <select class="ql-header" >
-    <option value="4"></option>
-    <option value="5"></option>
-    <option value="6"></option>
-    <option value=false></option>
-  </select>
-  <!-- Add a bold button -->
-  <button class="ql-bold"></button>
-  <!-- Add subscript and superscript buttons -->
-  <button class="ql-script" value="sub"></button>
-  <button class="ql-script" value="super"></button>
-  <button class="ql-redo" style="width: fit-content; padding: 5px" onclick="myRedo()"></button>
-  <button class="ql-undo" style="width: fit-content; padding: 5px" onclick="myUndo()"></button>
-  <button class="ql-downloadBtn" style="width: fit-content; padding: 5px" onclick="download()"></button>
-  <button class="ql-upload-text-btn" style="width: fit-content; padding: 5px" onclick="upload()"></button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quill Editor with Header List</title>
+    <!-- Include stylesheet -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <style>
+        body {
+            display: flex;
+            flex-direction: row-reverse;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #sidebar {
+            width: 200px;
+            height: 100%;
+            overflow-y: auto;
+            padding: 10px;
+            border-left: 1px solid #ccc;
+            direction: rtl;
+        }
+        #sidebar h3 {
+            margin: 0 0 10px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            text-align: center;
+        }
+        #sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #sidebar li {
+            padding: 3px 0;
+            cursor: pointer;
+        }
+        #sidebar li:hover {
+            background-color: #f0f0f0;
+        }
+        #editor-container {
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #editor {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .ql-editor {
+            direction: rtl !important;
+            text-align: right !important;
+        }
+        .ql-undo {
+            direction: ltr !important;
+            text-align: left !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h3>כותרות במסמך</h3>
+        <ul id="header-list"></ul>
+    </div>
+    <div id="editor-container">
+        <div id="toolbar">
+            <select class="ql-size">
+                <option value="small"></option>
+                <option selected></option>
+                <option value="large"></option>
+                <option value="huge"></option>
+            </select>
+            <button class="ql-header" value="1"> </button>
+            <button class="ql-header" value="2"> </button>
+            <button class="ql-header" value="3"> </button>
+            <select class="ql-header">
+                <option value="4"></option>
+                <option value="5"></option>
+                <option value="6"></option>
+                <option value=false></option>
+            </select>
+            <button class="ql-bold"></button>
+            <button class="ql-script" value="sub"></button>
+            <button class="ql-script" value="super"></button>
+            <button class="ql-redo" style="width: fit-content; padding: 5px" onclick="myRedo()"></button>
+            <button class="ql-undo" style="width: fit-content; padding: 5px" onclick="myUndo()"></button>
+            <button class="ql-downloadBtn" style="width: fit-content; padding: 5px" onclick="download()"></button>
+            <button class="ql-upload-text-btn" style="width: fit-content; padding: 5px" onclick="upload()"></button>
+        </div>
+        <div id="editor" dir="rtl">
+            <p>הדבק כאן את הטקסט ותתחיל לערוך</p>
+            <p>הנה קצת טקסט<strong> מודגש</strong></p>
+            <p><br /></p>
+        </div>
     </div>
 
-<div id="editor" dir="rtl">
-  <p>הדבק כאן את הטקסט ותתחיל לערוך</p>
-  <p> הנה קצת טקסט<strong> מודגש</strong> </p>
-  <p><br /></p>
-</div>
+    <!-- Include the Quill library -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 
+    <script>
+        var icons = Quill.import("ui/icons");
+        icons["undo"] = 'בטל';
+        icons["redo"] = 'בצע שוב';
+        icons["downloadBtn"] = 'ייצוא טקסט';
+        icons["upload-text-btn"] = 'העלאת קובץ טקסט';
 
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: "#toolbar",
+                history: {
+                    delay: 1000,
+                    maxStack: 100,
+                    userOnly: false
+                },
+            }
+        });
 
-<!-- Include the Quill library -->
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
-<style>
-  .ql-editor {
-    direction: rtl !important;
-    text-align: right !important;
-  }
-  .ql-undo {
-    direction: ltr !important;
-    text-align: left !important;
+        // Function to update header list
+        function updateHeaderList() {
+            const headerList = document.getElementById('header-list');
+            headerList.innerHTML = ''; // Clear existing list
 
-  }
-</style>
-<!-- Initialize Quill editor -->
+            const content = quill.root;
+            const headers = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            
+            headers.forEach((header, index) => {
+                const level = parseInt(header.tagName[1]);
+                const li = document.createElement('li');
+                li.textContent = header.textContent;
+                li.style.paddingRight = (level - 1) * 15 + 'px';
+                li.onclick = () => header.scrollIntoView({ behavior: 'smooth' });
+                headerList.appendChild(li);
+            });
+        }
 
-<script>
-  var icons = Quill.import("ui/icons");
-  icons["undo"] = 'בטל';
-  icons["redo"] = 'בצע שוב';
-  icons["downloadBtn"] = 'ייצוא טקסט';
-  icons["upload-text-btn"] = 'העלאת קובץ טקסט';
+        // Update header list when content changes
+        quill.on('text-change', updateHeaderList);
 
+        // Initial header list update
+        updateHeaderList();
 
-  const quill = new Quill('#editor', {
-    theme: 'snow'   ,
-      modules: {
-      toolbar: "#toolbar",      
-        history: {
-          delay: 1000,
-          maxStack: 100,
-          userOnly: false
-        },        
-      }
-  }
-);
+        // Download functionality
+        function download() {
+            let htmlContent = quill.root.innerHTML;
+            htmlContent = htmlContent.replace(/<p>/g, '');
+            htmlContent = htmlContent.replace(/<\/p>/g, '\n');
+            htmlContent = htmlContent.replace(/<br>/g, '\n');
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'מסמך.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
-// Add download functionality
-download = () => {
-    // Get the HTML content from Quill
-    let htmlContent = quill.root.innerHTML;
+        // Upload functionality
+        function upload() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.txt';
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    quill.insertText(0, e.target.result);
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
 
-    // Replace <p> tags with newlines
-    htmlContent = htmlContent.replace(/<p>/g, '');
-    htmlContent = htmlContent.replace(/<\/p>/g, '\n');
+        function myUndo() {
+            let myEditor = this.reactQuillRef.getEditor();
+            return myEditor.history.undo();
+        }
 
-    // Replace <br> tags with newlines
-    htmlContent = htmlContent.replace(/<br>/g, '\n');
-    
-    // Create a complete HTML document
-   
-
-    // Create blob and download link
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'מסמך.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-};
-
-
-
-// Add upload functionality
-upload = () => {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.txt';
-  input.onchange = function(event) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) {
-          quill.insertText(0, e.target.result);  // Insert the text 
-      };
-      reader.readAsText(file);
-  };
-  input.click();
-};
-myUndo = () => {
-  let myEditor = this.reactQuillRef.getEditor();
-  return myEditor.history.undo();
-}
-
-myRedo = () => {
-  let myEditor = this.reactQuillRef.getEditor();
-  return myEditor.history.redo();
-}
-</script>
+        function myRedo() {
+            let myEditor = this.reactQuillRef.getEditor();
+            return myEditor.history.redo();
+        }
+    </script>
+</body>
+</html>
