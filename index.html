@@ -2,18 +2,130 @@
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
 
 <!-- Create the editor container -->
-<div id="editor">
-  <p>Hello World!</p>
-  <p>Some initial <strong>bold</strong> text</p>
+<div id="toolbar">
+  <!-- Add font size dropdown -->
+  <select class="ql-size">
+    <option value="small"></option>
+    <!-- Note a missing, thus falsy value, is used to reset to default -->
+    <option selected></option>
+    <option value="large"></option>
+    <option value="huge"></option>
+  </select>
+  <button class="ql-header" value="1"> </button>
+  <button class="ql-header" value="2"> </button>
+  <button class="ql-header" value="3"> </button>
+  <select class="ql-header" >
+    <option value="4"></option>
+    <option value="5"></option>
+    <option value="6"></option>
+    <option value=false></option>
+  </select>
+  <!-- Add a bold button -->
+  <button class="ql-bold"></button>
+  <!-- Add subscript and superscript buttons -->
+  <button class="ql-script" value="sub"></button>
+  <button class="ql-script" value="super"></button>
+  <button class="ql-redo" style="width: fit-content; padding: 5px" onclick="myRedo()"></button>
+  <button class="ql-undo" style="width: fit-content; padding: 5px" onclick="myUndo()"></button>
+  <button class="ql-downloadBtn" style="width: fit-content; padding: 5px" onclick="download()"></button>
+  <button class="ql-upload-text-btn" style="width: fit-content; padding: 5px" onclick="upload()"></button>
+    </div>
+
+<div id="editor" dir="rtl">
+  <p>הדבק כאן את הטקסט ותתחיל לערוך</p>
+  <p> הנה קצת טקסט<strong> מודגש</strong> </p>
   <p><br /></p>
 </div>
 
+
+
 <!-- Include the Quill library -->
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<style>
+  .ql-editor {
+    direction: rtl !important;
+    text-align: right !important;
+  }
+  .ql-undo {
+    direction: ltr !important;
+    text-align: left !important;
 
+  }
+</style>
 <!-- Initialize Quill editor -->
+
 <script>
+  var icons = Quill.import("ui/icons");
+  icons["undo"] = 'בטל';
+  icons["redo"] = 'בצע שוב';
+  icons["downloadBtn"] = 'ייצוא טקסט';
+  icons["upload-text-btn"] = 'העלאת קובץ טקסט';
+
+
   const quill = new Quill('#editor', {
-    theme: 'snow'
-  });
+    theme: 'snow'   ,
+      modules: {
+      toolbar: "#toolbar",      
+        history: {
+          delay: 1000,
+          maxStack: 100,
+          userOnly: false
+        },        
+      }
+  }
+);
+
+// Add download functionality
+download = () => {
+    // Get the HTML content from Quill
+    let htmlContent = quill.root.innerHTML;
+
+    // Replace <p> tags with newlines
+    htmlContent = htmlContent.replace(/<p>/g, '');
+    htmlContent = htmlContent.replace(/<\/p>/g, '\n');
+
+    // Replace <br> tags with newlines
+    htmlContent = htmlContent.replace(/<br>/g, '\n');
+    
+    // Create a complete HTML document
+   
+
+    // Create blob and download link
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'מסמך.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+
+
+// Add upload functionality
+upload = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.txt';
+  input.onchange = function(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+          quill.insertText(0, e.target.result);  // Insert the text 
+      };
+      reader.readAsText(file);
+  };
+  input.click();
+};
+myUndo = () => {
+  let myEditor = this.reactQuillRef.getEditor();
+  return myEditor.history.undo();
+}
+
+myRedo = () => {
+  let myEditor = this.reactQuillRef.getEditor();
+  return myEditor.history.redo();
+}
 </script>
